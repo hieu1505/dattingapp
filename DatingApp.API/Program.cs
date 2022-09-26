@@ -16,7 +16,7 @@ services.AddSwaggerGen();
 //     options.UseSqlServer(connectionString));
  
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 29));
-services.AddDbContext<DataContex>(
+services.AddDbContext<DataContext>(
     dbContextOptions => dbContextOptions
         .UseMySql(connectionString, serverVersion)
         .LogTo(Console.WriteLine, LogLevel.Information)
