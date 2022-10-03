@@ -1,6 +1,10 @@
+using System.Text;
 using DatingApp.API.Database;
+using DatingApp.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
- 
+using Microsoft.IdentityModel.Tokens;
+
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var connectionString = builder
@@ -23,7 +27,21 @@ services.AddDbContext<DataContext>(
         .EnableSensitiveDataLogging()
         .EnableDetailedErrors()
 );
- 
+ services.AddScoped<ITokenService,TokenService>();
+ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["TokenKey"]))
+        };
+    });
+
 var app = builder.Build();
  
 // Configure the HTTP request pipeline.
@@ -37,6 +55,8 @@ app.UseHttpsRedirection();
  
 app.UseAuthorization();
  
+app.UseAuthentication();
+
 app.MapControllers();
  
 app.Run();
