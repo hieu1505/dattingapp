@@ -13,78 +13,46 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DatingApp.API.Controllers
 {
-    public class AuthController : BaseController
+    [ApiController]
+    [Route("/api/auth")]
+    public class AuthController : ControllerBase
     {
-        public readonly ITokenService _tokenService;
-        private readonly DataContext _context;
-        public AuthController(DataContext context, ITokenService tokenService)
+       
+        private readonly IAuthService _authService;
+        public AuthController(IAuthService authService)
         {
-            _context = context;
-            _tokenService = tokenService;
+             _authService = authService;
+
+           
 
         }
         [HttpPost("register")]
-        public IActionResult Register([FromBody] AuthUserDto authUserDto)
+        public IActionResult Register([FromBody] RegisterUserDto registerUserDto)
         {
-            authUserDto.Username = authUserDto.Username.ToLower();
-            if (_context.AppUsers.Any(u => u.Username == authUserDto.Username))
+            try
             {
-                return BadRequest("Username is already existed!");
+                return Ok(_authService.Register(registerUserDto));
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return BadRequest(ex.Message);
             }
 
-            using var hmac = new HMACSHA512();
-            var passwordBytes = Encoding.UTF8.GetBytes(authUserDto.Password);
-            var newUser = new User
-            {
-                Username = authUserDto.Username,
-                PasswordSalt = hmac.Key,
-                PasswordHash = hmac.ComputeHash(passwordBytes)
-            };
-
-            _context.AppUsers.Add(newUser);
-            _context.SaveChanges();
-            var token = _tokenService.CreateToken(newUser.Username);
-            return Ok(new AuthTokenDTo
-            {
-                Username = newUser.Username,
-                Token = token
-            }
-);
         }
         [HttpPost("login")]
         public IActionResult Login([FromBody] AuthUserDto authUserDto)
         {
-            authUserDto.Username = authUserDto.Username.ToLower();
-            var currentUser = _context.AppUsers
-            .FirstOrDefault(u => u.Username == authUserDto.Username);
-            if (currentUser == null)
+           try
             {
-                return Unauthorized("Username is invalid");
+                return Ok(_authService.Login(authUserDto));
             }
-            using var hmac = new HMACSHA512(currentUser.PasswordSalt);
-            var passwordBytes = hmac.ComputeHash(
-                Encoding.UTF8.GetBytes(authUserDto.Password)
-            );
-            for (int i = 0; i < currentUser.PasswordHash.Length; i++)
+            catch (UnauthorizedAccessException ex)
             {
-                if (currentUser.PasswordHash[i] != passwordBytes[i])
-                {
-                    return Unauthorized("passwords is inbalid");
-                }
+                return Unauthorized(ex.Message);
             }
-            var token = _tokenService.CreateToken(currentUser.Username);
-            return Ok(new AuthTokenDTo
-            {
-                Username = currentUser.Username,
-                Token = token
-            });
 
         }
-        // [Authorize]
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok(_context.AppUsers.ToList());
-        }
+
+
     }
 }

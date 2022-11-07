@@ -3,6 +3,7 @@ using System;
 using DatingApp.API.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatingApp.API.Database.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContexModelSnapshot : ModelSnapshot
+    [Migration("20221030064858_AddMemberInfoToUser")]
+    partial class AddMemberInfoToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,8 +28,8 @@ namespace DatingApp.API.Database.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Avartar")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -36,25 +38,27 @@ namespace DatingApp.API.Database.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
                     b.Property<string>("Gender")
-                        .HasMaxLength(6)
-                        .HasColumnType("varchar(6)");
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
-                    b.Property<string>("Introduction")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                    b.Property<int>("Introduction")
+                        .HasColumnType("int");
 
                     b.Property<string>("KnownsAs")
-                        .HasMaxLength(32)
-                        .HasColumnType("varchar(32)");
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
                         .HasColumnType("longblob");
 
                     b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
                         .HasColumnType("longblob");
 
                     b.Property<DateTime?>("UpdateAt")
@@ -64,10 +68,6 @@ namespace DatingApp.API.Database.Migrations
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
-
-                    b.Property<string>("city")
-                        .HasMaxLength(32)
-                        .HasColumnType("varchar(32)");
 
                     b.HasKey("Id");
 
